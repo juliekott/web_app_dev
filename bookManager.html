@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Manager</title>
+  <style>
+    body { font-family: sans-serif; padding: 1em; color: navy; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+    form { margin-bottom: 1em; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+  <h1>Book Manager</h1>
+
+  <table id="booksTable">
+    <thead>
+      <tr><th>Title</th><th>Author</th><th>Year</th><th>Genre</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <form id="updateForm">
+    <h2>Update Book</h2>
+    <div>
+      <label>
+        Title to update:
+        <input type="text" id="upd-find-title" required>
+      </label>
+    </div>
+    <div>
+      <label>
+        New Title:
+        <input type="text" id="upd-title" required>
+      </label>
+    </div>
+    <div>
+      <label>
+        Author:
+        <input type="text" id="upd-author" required>
+      </label>
+    </div>
+    <div>
+      <label>
+        Year:
+        <input type="number" id="upd-year" required>
+      </label>
+    </div>
+    <div>
+      <label>
+        Genre:
+        <input type="text" id="upd-genre" required>
+      </label>
+    </div>
+    <button type="submit">Update</button>
+    <div class="error" id="upd-error"></div>
+  </form>
+
+  <form id="removeForm">
+    <h2>Remove Book</h2>
+    <label>
+      Title to remove:
+      <input type="text" id="rm-title" required>
+    </label>
+    <button type="submit">Remove</button>
+    <div class="error" id="rm-error"></div>
+  </form>
+
+  <script>
+    let booksData = [
+      { title: "Howl's Moving Castle", author: "Diana Wynne Jones", year: 1986, genre: "Fantasy" },
+      { title: "Pride and Prejudice", author: "Jane Austen", year: 1813, genre: "Romance" },
+      { title: "The Hunger Games", author: "Suzanne Collins", year: 2008, genre: "Dystopian" },
+    ];
+
+    function renderTable() {
+      const tbody = document.querySelector("#booksTable tbody");
+      tbody.innerHTML = ""; // clear
+      booksData.forEach(book => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${book.title}</td>
+          <td>${book.author}</td>
+          <td>${book.year}</td>
+          <td>${book.genre}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderTable();
+
+    function validateBookFields(title, author, year, genre) {
+      if (!title.trim() || !author.trim() || !genre.trim()) {
+        return "All text fields must be non-empty.";
+      }
+      if (isNaN(year) || year <= 0) {
+        return "Year must be a valid positive number.";
+      }
+      return null;
+    }
+
+    document.getElementById("updateForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const findTitle = document.getElementById("upd-find-title").value;
+      const newTitle = document.getElementById("upd-title").value;
+      const author   = document.getElementById("upd-author").value;
+      const year     = parseInt(document.getElementById("upd-year").value, 10);
+      const genre    = document.getElementById("upd-genre").value;
+      const errDiv   = document.getElementById("upd-error");
+      errDiv.textContent = "";
+
+      const err = validateBookFields(newTitle, author, year, genre);
+      if (err) { errDiv.textContent = err; return; }
+
+      const idx = booksData.findIndex(b => b.title === findTitle);
+      if (idx < 0) {
+        errDiv.textContent = `No book found with title "${findTitle}".`;
+        return;
+      }
+      booksData[idx] = { title: newTitle, author, year, genre };
+      renderTable();
+      e.target.reset();
+    });
+    
+    document.getElementById("removeForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const titleToRemove = document.getElementById("rm-title").value;
+      const errDiv = document.getElementById("rm-error");
+      errDiv.textContent = "";
+
+      const idx = booksData.findIndex(b => b.title === titleToRemove);
+      if (idx < 0) {
+        errDiv.textContent = `No book found with title "${titleToRemove}".`;
+        return;
+      }
+      booksData.splice(idx, 1);
+      renderTable();
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
